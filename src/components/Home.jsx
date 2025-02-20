@@ -1,22 +1,98 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import useApi from "../api/useApi";
+import axios from "axios";
+import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import Task from "./Task";
+import TaskColumn from "./TaskColumn";
 
 function Home() {
+  
   const [title, settitle] = useState("");
   const [description, setdescription] = useState("");
-  const [category, setcategory] = useState("");
+  const [category, setcategory] = useState("To-Do");
+  const [ todo , settodo ] = useState([]);
 
-  const addTaskbutton = (event) => {
+  const useaxiosapi = useApi();
+
+
+
+
+
+  const addTaskbutton =async (event) => {
     event.preventDefault();
 
     alert("add task");
+    
     const TaskAddBYUser = {
       Title: title,
       Description: description,
       Category: category,
       Timestam: new Date().toISOString(),
     };
+
+    // add task to backend 
+
+    await useaxiosapi.post('/tasks',TaskAddBYUser)
+
+    .then((res)=>{
+      if(res.status===200)
+      {
+        alert("added")
+        setcategory("");
+        setdescription("");
+        settitle("");
+      }else{
+        alert("failed");
+      }
+    });
+
+
+
+
+
     console.log(TaskAddBYUser);
   };
+
+
+  // send to todo 
+  const [ Tasks , setTasks ] = useState([]);
+
+  useEffect(()=>{
+    useaxiosapi.get('/tasks')
+    .then((res)=>{
+      setTasks(res.data);
+      console.log(res);
+    }).catch(error=>{
+      console.log(error.message)
+    })
+
+  },[])
+
+  console.log(Tasks ,"d");
+
+  
+
+
+
+
+
+  // move task
+  const moveTask = async (taskId, oldCategory, newCategory) => {
+    // Update locally first
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task._id === taskId ? { ...task, Category: newCategory } : task
+      )
+    );
+  }
+  const x = Tasks.filter((tasks)=> tasks.
+  Description
+  );
+  console.log(x,'doxz');
+
+  
+
 
   return (
     <div className="px-6 py-10">
@@ -57,7 +133,7 @@ function Home() {
             <div className="modal-action">
               <form method="dialog" onSubmit={addTaskbutton}>
                 <button
-                  className="btn"
+                  className="btn" type="submit"
                   onClick={() => document.getElementById("my_modal_1").close()}
                 >
                   Close
@@ -71,20 +147,46 @@ function Home() {
       {/* 3 section  */}
 
       <section className="grid w-full lg:grid-cols-3 border gap-4 md:grid-cols-2 py-6">
-        <div className="border">
-          <h1>Todo</h1>
-          <div>start</div>
-        </div>
+        <TaskColumn
 
-        <div className="border">
-          <h2>Processing</h2>
-          <div>start</div>
-        </div>
-        <div className="border">
-          <h2>Done</h2>
+        
 
-          <div>start</div>
-        </div>
+        tasks={Tasks.filter((tasks)=> tasks.Category==='To-Do')}
+
+        category="To-Do"
+
+        moveTask={moveTask}
+
+     
+
+
+        />
+         <TaskColumn 
+        
+
+         tasks={Tasks.filter((task) => task.Category === "In Progress")}
+
+
+        
+
+            category="In Progress"
+
+            moveTask={moveTask}
+
+
+          />
+          <TaskColumn
+         
+            tasks={Tasks.filter((task) => task.Category ==="Done")}
+
+
+            category="Done"
+            moveTask={moveTask}
+          
+          />
+
+        
+
       </section>
     </div>
   );
