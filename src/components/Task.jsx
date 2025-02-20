@@ -1,6 +1,6 @@
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import React from "react";
+import React, { useState } from "react";
 import useApi from "../api/useApi";
 
 const ItemType = {
@@ -8,8 +8,7 @@ const ItemType = {
 };
 
 const Task = ({ task, index }) => {
-
-    const useaxiosapi = useApi();
+  const useaxiosapi = useApi();
   const [{ isDragging }, drag] = useDrag({
     type: ItemType.TASK,
 
@@ -20,18 +19,44 @@ const Task = ({ task, index }) => {
     }),
   });
 
-  const deleteButton = (id) =>{
-    useaxiosapi.delete(`/tasks/${id}`)
-    .then((res)=>{
-        alert("delted")
-    })
-    .catch(error=>{
-        alert("error on deleted")
-    })
+  const deleteButton = (id) => {
+    useaxiosapi
+      .delete(`/tasks/${id}`)
+      .then((res) => {
+        alert("delted");
+      })
+      .catch((error) => {
+        alert("error on deleted");
+      });
     console.log(id);
     alert(id);
+  };
 
-  }
+  // update opration
+  const [ title , settitle ] = useState("");
+  const [ description , setdescription ] = useState("");
+  const [ category  , setcategory ] = useState("");
+
+  const updateButton = (id) => {
+
+    const updatetask = {
+        Title : title,
+        Description : description,
+        Category: category,
+    }
+
+    useaxiosapi
+      .put(`/tasks/${id}`,updatetask)
+      .then((res) => {
+        console.log(res);
+        alert("taks update");
+      })
+      .catch((error) => {
+        console.log("faled");
+      });
+
+    alert("task clicked");
+  };
 
   return (
     <div
@@ -46,10 +71,64 @@ const Task = ({ task, index }) => {
       </div>
 
       <div className="flex gap-2">
-        <button className="btn" onClick={()=> deleteButton(task._id)}>delete</button>
-        <button className="btn">Update</button>
-      </div>
+        <button className="btn" onClick={() => deleteButton(task._id)}>
+          delete
+        </button>
 
+        {/* Open the modal using document.getElementById('ID').showModal() method */}
+        <section>
+        <button
+          className="btn"
+          onClick={() => document.getElementById("my_modal_1").showModal()}
+        >
+          open modal
+        </button>
+        <dialog id="my_modal_1" className="modal">
+          <div className="modal-box">
+            <section className="flex flex-col gap-4 p-2 w-full">
+              <input
+                type="text"
+                placeholder="Enter your title"
+                maxLength={"50"}
+                onChange={(e) => settitle(e.target.value)}
+              />
+
+              <textarea
+                className="min-h-20"
+                onChange={(e) => setdescription(e.target.value)}
+                maxLength={"2000"}
+              />
+
+              <select
+                name=""
+                id=""
+                onChange={(e) => setcategory(e.target.value)}
+              >
+                <option value={"To-Do"}>To-Do</option>
+                <option value={"In Progress"}>In Progress</option>
+                <option value={"Done"}>Done</option>
+              </select>
+            </section>
+
+            <div className="modal-action">
+              <form method="dialog" >
+                <button
+                  className="btn" type="submit"
+                  onClick={() => document.getElementById("my_modal_1").close()}
+                >
+                  Close
+                </button>
+              </form>
+            </div>
+          </div>
+        </dialog>
+
+
+
+      </section>
+
+
+      </div>
     </div>
   );
 };
