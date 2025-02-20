@@ -5,16 +5,24 @@ import App from "./App.jsx";
 import { BrowserRouter, RouterProvider } from "react-router-dom";
 import { route } from "./router/Route.jsx";
 import ManagementContext from "./context/ManagementContext.jsx";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { DndProvider } from "react-dnd";
+import { DndContext, useDndMonitor } from "@dnd-kit/core";
+
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    
     <ManagementContext>
-      <DndProvider backend={HTML5Backend}>
-        <RouterProvider router={route} />
-      </DndProvider>
+      <QueryClientProvider client={queryClient}>
+        <DndContext>
+          <RouterProvider router={route} />
+        </DndContext>
+      </QueryClientProvider>
     </ManagementContext>
   </StrictMode>
 );
